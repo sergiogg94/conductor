@@ -1,0 +1,122 @@
+framework:
+  name: conductor
+  version: 0.1.0
+
+project:
+  name: Example Project
+  slug: example-project
+  type: webapp
+  description: Short description of the project.
+
+features:
+  github_projects: true
+  opencode_commands: true
+  documentation_scaffold: true
+  ci_templates: true
+
+agents:
+  orchestrator:
+    enabled: true
+    model_tier: medium
+    can_update_projects: false
+
+  discovery:
+    enabled: true
+    model_tier: small
+    can_update_projects: false
+
+  scopper:
+    enabled: true
+    model_tier: small
+    can_update_projects: false
+
+  planner:
+    enabled: true
+    model_tier: medium
+    can_update_projects: true
+
+  architect:
+    enabled: true
+    model_tier: medium
+    can_update_projects: false
+
+  developer:
+    enabled: true
+    model_tier: strong
+    can_update_projects: true
+
+  reviewer:
+    enabled: true
+    model_tier: medium
+    can_update_projects: false
+
+  tester:
+    enabled: true
+    model_tier: medium
+    can_update_projects: false
+
+  devops:
+    enabled: true
+    model_tier: medium
+    can_update_projects: true
+
+  docs:
+    enabled: true
+    model_tier: small
+    can_update_projects: false
+
+artifacts:
+  discovery: docs/discovery.md
+  requirements: docs/requirements.md
+  architecture: docs/architecture.md
+  delivery_checklist: docs/delivery-checklist.md
+  adr_directory: docs/adr
+  review_reports: docs/reviews
+  test_reports: docs/tests
+
+github:
+  repository:
+    owner: your-github-user-or-org
+    name: example-project
+    default_branch: main
+
+  projects:
+    enabled: true
+    owner_type: organization
+    owner: your-github-user-or-org
+    project_number: 1
+
+    fields:
+      status: Status
+      priority: Priority
+      type: Type
+      area: Area
+      effort: Effort
+      iteration: Iteration
+      linked_pr: Linked PR
+      risk: Risk
+
+    states:
+      backlog: Backlog
+      ready: Ready
+      in_progress: In Progress
+      review: Review
+      blocked: Blocked
+      done: Done
+
+workflow:
+  require_human_approval_for:
+    - scope_changes
+    - architecture_decisions
+    - high_impact_code_changes
+    - release_readiness
+
+  default_path:
+    - discovery
+    - scopper
+    - planner
+    - architect
+    - developer
+    - reviewer
+    - tester
+    - docs
