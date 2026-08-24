@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines the shared operating principles of the Conductor framework. Every agent inherits these principles. Agent-specific instructions in each agent's `system_prompt.md` extend them but never override them.
+This document defines the shared operating principles of the Conductor framework. Every agent inherits these principles. Agent-specific instructions in each agent's definition file (`agents/primary/<name>.md`, `agents/subagents/<name>.md`) extend them but never override them.
 
 If any instruction ever conflicts with these principles, these principles win — unless the human explicitly decides otherwise.
 
@@ -120,8 +120,12 @@ Review severity:
 ## 12. The default pipeline
 
 ```
-scoper
-    ↓  (human approves scope brief)
+discovery
+    ↓  (human approves discovery)
+scopper
+    ↓  (human approves requirements)
+planner
+    ↓
 architect
     ↓  (human approves ADR)
 developer + tester  (parallel)

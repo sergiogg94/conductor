@@ -25,7 +25,7 @@ OPENCODE RULES THIS FILE RELIES ON
 
 PLACEHOLDERS
 
-  {{AGENT_NAME}}        lowercase-hyphen id, equals file name (e.g. scoper)
+  {{AGENT_NAME}}        lowercase-hyphen id, equals file name (e.g. scopper)
   {{TITLE}}             display name (e.g. Scoper)
   {{DESCRIPTION}}       one line: what it does AND when to invoke it
                         (opencode uses this for routing — be concrete)

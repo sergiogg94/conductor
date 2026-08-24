@@ -60,7 +60,7 @@ agents:
     model_tier: medium
     can_update_projects: true
 
-  docs:
+  documenter:
     enabled: true
     model_tier: small
     can_update_projects: false
@@ -68,11 +68,13 @@ agents:
 artifacts:
   discovery: docs/discovery.md
   requirements: docs/requirements.md
+  implementation_plan: docs/implementation-plan.md
   architecture: docs/architecture.md
   delivery_checklist: docs/delivery-checklist.md
   adr_directory: docs/adr
   review_reports: docs/reviews
   test_reports: docs/tests
+  implementation_notes: docs/notes
 
 github:
   repository:
@@ -117,6 +119,6 @@ workflow:
     - planner
     - architect
     - developer
-    - reviewer
     - tester
-    - docs
+    - reviewer
+    - documenter
