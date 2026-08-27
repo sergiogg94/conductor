@@ -12,11 +12,17 @@ docs/, .github/) are never touched.
 from __future__ import annotations
 
 import argparse
-import shutil
 import sys
 from pathlib import Path
 
-from bootstrap_project import SOURCE_ROOT, build_manifest
+from bootstrap_project import (
+    SOURCE_ROOT,
+    build_manifest,
+    is_agent_destination,
+    load_default_tiers,
+    parse_model_tiers,
+    render_agent,
+)
 
 MANAGED_PREFIXES = (
     ".opencode/agent/",
@@ -40,19 +46,33 @@ def managed_entries() -> list[tuple[Path, str]]:
     ]
 
 
-def files_match(source: Path, target_file: Path) -> bool:
-    return source.read_bytes() == target_file.read_bytes()
+def target_tiers(target: Path) -> dict[str, str]:
+    project_yaml = target / "conductor.yaml"
+    if project_yaml.is_file():
+        return parse_model_tiers(project_yaml.read_text(encoding="utf-8"))
+    return load_default_tiers()
+
+
+def expected_content(source: Path, destination: str, tiers: dict[str, str]) -> bytes:
+    if is_agent_destination(destination):
+        return render_agent(source, tiers).encode("utf-8")
+    return source.read_bytes()
+
+
+def files_match(source: Path, destination: str, target_file: Path, tiers: dict[str, str]) -> bool:
+    return expected_content(source, destination, tiers) == target_file.read_bytes()
 
 
 def inspect(target: Path) -> tuple[list[tuple[str, str]], int]:
     statuses: list[tuple[str, str]] = []
     managed_destinations = {destination for _, destination in managed_entries()}
+    tiers = target_tiers(target)
 
     for source, destination in managed_entries():
         target_file = target / destination
         if not target_file.exists():
             statuses.append((STATUS_MISSING, destination))
-        elif files_match(source, target_file):
+        elif files_match(source, destination, target_file, tiers):
             statuses.append((STATUS_UP_TO_DATE, destination))
         else:
             statuses.append((STATUS_DIFFERS, destination))
@@ -97,13 +117,14 @@ def print_report(statuses: list[tuple[str, str]], project_owned_note: bool) -> N
 def apply_updates(target: Path) -> tuple[int, int]:
     updated = 0
     restored = 0
+    tiers = target_tiers(target)
     for source, destination in managed_entries():
         target_file = target / destination
-        if target_file.exists() and files_match(source, target_file):
+        if target_file.exists() and files_match(source, destination, target_file, tiers):
             continue
         target_file.parent.mkdir(parents=True, exist_ok=True)
         action = "restored" if not target_file.exists() else "updated"
-        shutil.copyfile(source, target_file)
+        target_file.write_bytes(expected_content(source, destination, tiers))
         print(f"  {'+' if action == 'restored' else '~'} [{action:>8}] {destination}")
         if action == "restored":
             restored += 1

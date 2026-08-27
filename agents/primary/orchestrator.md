@@ -1,7 +1,7 @@
 ---
 description: Coordinates the Conductor workflow. Assesses project state, decides the next stage, delegates work to specialized subagents, and enforces human approval gates. Use as the main entry point for any feature or change.
 mode: primary
-model: groq/llama-3.3-70b-versatile
+model_tier: medium
 temperature: 0.2
 steps: 40
 permission:

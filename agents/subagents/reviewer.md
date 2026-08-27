@@ -1,7 +1,7 @@
 ---
 description: Reviews completed implementations against the approved ADR, requirements, and test report - correctness, quality, test coverage, and scope discipline - producing a structured report with severity-classified findings and a verdict. Invoke after the developer commits and the tester has reported.
 mode: subagent
-model: google/gemini-2.0-flash
+model_tier: medium
 temperature: 0.1
 steps: 25
 permission:

@@ -13,9 +13,17 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from bootstrap_project import SOURCE_ROOT, REQUIRED_SOURCES, build_manifest, validate_sources
+from bootstrap_project import (
+    AGENT_TIERS,
+    SOURCE_ROOT,
+    REQUIRED_SOURCES,
+    build_manifest,
+    parse_frontmatter,
+    validate_sources,
+    validate_tiers,
+)
 
-AGENT_FRONTMATTER_KEYS = {"description", "mode", "model"}
+AGENT_FRONTMATTER_KEYS = {"description", "mode", "model_tier"}
 ARTIFACT_TEMPLATES = [
     "adr.md",
     "delivery-checklist.md",
@@ -34,26 +42,16 @@ def check_exists(relative: str) -> str | None:
     return None
 
 
-def parse_frontmatter(path: Path) -> dict[str, str]:
-    fields: dict[str, str] = {}
-    lines = path.read_text(encoding="utf-8").splitlines()
-    if not lines or lines[0].strip() != "---":
-        return fields
-    for line in lines[1:]:
-        stripped = line.strip()
-        if stripped == "---":
-            break
-        if not line.startswith((" ", "\t")) and ":" in stripped:
-            key, _, value = stripped.partition(":")
-            fields[key.strip()] = value.strip()
-    return fields
-
-
 def validate() -> tuple[list[str], int]:
     errors: list[str] = []
     checks = 0
 
     for problem in validate_sources(build_manifest()):
+        errors.append(problem)
+        checks += 1
+
+    manifest = build_manifest()
+    for problem in validate_tiers(manifest):
         errors.append(problem)
         checks += 1
 
@@ -78,7 +76,7 @@ def validate() -> tuple[list[str], int]:
     checks += 1
     for command in commands:
         checks += 1
-        frontmatter = parse_frontmatter(command)
+        frontmatter = parse_frontmatter(command.read_text(encoding="utf-8"))
         target_agent = frontmatter.get("agent", "")
         agent_path = next(
             (directory / f"{target_agent}.md" for directory in agent_dirs
@@ -98,7 +96,7 @@ def validate() -> tuple[list[str], int]:
     checks += 1
     for agent in agents:
         checks += 1
-        frontmatter = parse_frontmatter(agent)
+        frontmatter = parse_frontmatter(agent.read_text(encoding="utf-8"))
         missing_keys = AGENT_FRONTMATTER_KEYS - frontmatter.keys()
         if missing_keys:
             errors.append(
@@ -107,6 +105,12 @@ def validate() -> tuple[list[str], int]:
         mode = frontmatter.get("mode", "")
         if mode and mode not in ("primary", "subagent", "all"):
             errors.append(f"agent {agent.name}: invalid mode '{mode}'")
+        tier = frontmatter.get("model_tier", "")
+        if tier and tier not in AGENT_TIERS:
+            errors.append(
+                f"agent {agent.name}: invalid model_tier '{tier}' "
+                f"(expected one of {', '.join(AGENT_TIERS)})"
+            )
 
     return errors, checks
 

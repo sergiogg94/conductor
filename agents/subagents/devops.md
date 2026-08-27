@@ -1,7 +1,7 @@
 ---
 description: Builds and maintains delivery infrastructure - CI/CD workflows, GitHub Actions, automation scripts, local development setup, and environment consistency. Invoke for infrastructure tasks, never for feature implementation.
 mode: subagent
-model: google/gemini-2.0-flash
+model_tier: medium
 temperature: 0.1
 steps: 25
 permission:

@@ -93,7 +93,7 @@ Each agent in this catalog is described using the same structure:
 - responsibilities
 - non-responsibilities
 - dependencies
-- suggested model tier
+- model tier (`low` / `medium` / `high`) — the effort tier the agent needs; the concrete model is resolved from the `model_tiers` map in `conductor.yaml` at install
 - GitHub Projects relationship
 
 This structure should later map into each OpenCode agent definition.

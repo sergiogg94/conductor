@@ -49,10 +49,10 @@ Open `~/projects/my-app/conductor.yaml` and edit the fields that are placeholder
 - `project.name`, `project.slug`, `project.description` — who this project is
 - `github.repository.owner` / `name` / `default_branch` — your repo identity
 - `github.projects.owner` / `project_number` — which board to track against
-- per-agent `model_tier` — `small` / `medium` / `strong` for what each role deserves
+- `model_tiers.*` — the concrete model used for each effort tier (`low` / `medium` / `high`), in OpenCode `provider/model-id` format; defaults to `opencode/big-pickle` for all three
 - `artifacts.*` — keep the defaults unless you have a reason to move them
 
-The agents reference these values, so fill in the project identity before your first run. `conductor.yaml` is the single project-owned configuration file; sync never overwrites it.
+Agents reference only an effort tier (`model_tier`), not a concrete model. Bootstrap and sync resolve each agent's tier to the model you set under `model_tiers`, so reassigning a model is a one-line change in `conductor.yaml`. Fill in the project identity before your first run; `conductor.yaml` is the single project-owned configuration file and sync never overwrites it.
 
 ## Step 4 — Start OpenCode in the Project
 

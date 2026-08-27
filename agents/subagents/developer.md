@@ -1,7 +1,7 @@
 ---
 description: Implements approved tasks exactly as specified by the ADR - code changes on a feature branch, commits referencing task IDs, and implementation notes. Invoke after requirements, plan, and ADR(s) are human-approved.
 mode: subagent
-model: groq/llama-3.3-70b-versatile
+model_tier: high
 temperature: 0.1
 steps: 40
 permission:

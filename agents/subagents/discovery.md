@@ -1,7 +1,7 @@
 ---
 description: Turns a raw idea or request into a clarified problem statement with goals, non-goals, assumptions, and open questions. Invoke first, before scoping, whenever the intent behind new work needs to be understood and framed.
 mode: subagent
-model: ollama/qwen2.5:7b-instruct
+model_tier: low
 temperature: 0.2
 steps: 15
 permission:

@@ -1,7 +1,7 @@
 ---
 description: Converts an approved Requirements artifact into an executable, trackable work plan - task breakdown, suggested issue structure, priorities, dependencies, execution sequence, and GitHub Projects mapping. Invoke after requirements are human-approved.
 mode: subagent
-model: google/gemini-2.0-flash
+model_tier: medium
 temperature: 0.2
 steps: 20
 permission:

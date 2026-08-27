@@ -1,7 +1,7 @@
 ---
 description: Translates approved requirements and implementation plan into concrete technical decisions recorded as ADRs - options considered, recommendation, and implementation-grade specifications. Invoke after requirements and plan are human-approved.
 mode: subagent
-model: groq/llama-3.3-70b-versatile
+model_tier: medium
 temperature: 0.3
 steps: 25
 permission:

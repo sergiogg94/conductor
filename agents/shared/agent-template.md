@@ -17,7 +17,9 @@ OPENCODE RULES THIS FILE RELIES ON
   permission, disable, temperature, top_p.
 - The markdown body IS the agent's system prompt. Never add a `prompt:` key.
 - `mode`: primary (user-facing entry point) | subagent (invoked via task) | all.
-- `model` always carries a provider prefix: `provider/model-id`.
+- `model_tier` is a source-only marker (values: low | medium | high). OpenCode
+  ignores it; bootstrap/sync resolve it to a concrete `model: provider/model-id`
+  from the `model_tiers` map in conductor.yaml.
 - `permission` values: allow | ask | deny. Bash accepts a pattern object
   (`"*": ask`, then narrower rules last — last matching rule wins).
 - After installing into a consumer project (bootstrap), agents live under
@@ -30,8 +32,8 @@ PLACEHOLDERS
   {{DESCRIPTION}}       one line: what it does AND when to invoke it
                         (opencode uses this for routing — be concrete)
   {{MODE}}              primary | subagent
-  {{MODEL_ID}}          provider/model-id resolved from the model_tier in
-                        conductor.yaml (small | medium | strong)
+  {{MODEL_TIER}}        low | medium | high — effort tier this agent needs; the
+                        concrete model is resolved from conductor.yaml at install
   {{TEMPERATURE}}       0.1 reviews/specs · 0.2–0.4 drafting/design
   {{STEPS}}             step cap; keep low for focused roles (10–40)
   {{PERMISSION_*}}      allow | ask | deny per tool
@@ -48,7 +50,7 @@ PLACEHOLDERS
 ---
 description: {{DESCRIPTION}}
 mode: {{MODE}}
-model: {{MODEL_ID}}
+model_tier: {{MODEL_TIER}}
 temperature: {{TEMPERATURE}}
 steps: {{STEPS}}
 permission:

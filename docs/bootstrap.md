@@ -42,10 +42,23 @@ Bootstrap is idempotent: re-running it on an installed project skips everything 
 
 Notes:
 
-- agents are copied as-is; their frontmatter and prompts need no rendering
+- agents are installed **rendered**: each source agent carries only a `model_tier` (`low` / `medium` / `high`); bootstrap resolves it to a concrete `model: provider/model-id` from the `model_tiers` map in `conductor.yaml`
 - shared framework docs land at `.conductor/` so agent references to them resolve inside the consumer project
 - artifact templates keep the literal path `templates/artifacts/` because agent output contracts reference it
 - `agent-template.md` is source-only tooling for generating new framework agents and is never installed
+
+## Model Tiers
+
+Each agent references an effort tier instead of a hardcoded model. The concrete model per tier is defined once in `conductor.yaml`:
+
+```yaml
+model_tiers:
+  low: opencode/big-pickle
+  medium: opencode/big-pickle
+  high: opencode/big-pickle
+```
+
+To change what a tier runs on, edit one line and re-sync — agents that use that tier are re-rendered automatically (see below). Adding a new tier requires updating both this map and the source agents' `model_tier`, which `validate_templates.py` enforces.
 
 ## Ownership Model
 
@@ -65,9 +78,11 @@ python scripts/sync_framework.py --apply    # update differing + restore missing
 
 Status values: `up-to-date`, `differs`, `missing` (framework file absent locally), `local-only` (extra file in a managed directory — always preserved). Review results with `git diff` before committing.
 
+Sync resolves agent models from the **project's own** `conductor.yaml` `model_tiers` map. If you reassign a tier there, the matching `.opencode/agent/*.md` files show as `differs` and are updated with `--apply`; agents whose tier did not change are left untouched.
+
 ## Post-install Steps
 
-1. Edit `conductor.yaml`: project identity, `github.repository`, `github.projects`
+1. Edit `conductor.yaml`: project identity, `github.repository`, `github.projects` and (optionally) the `model_tiers` map
 2. Start opencode in the project — `orchestrator` loads as the default agent
 3. Run `/discover <idea>` to produce the first artifact
 4. Optional: store the provider API key as the `ANTHROPIC_API_KEY` secret to enable `.github/workflows/opencode-review.yml`

@@ -28,6 +28,76 @@ REQUIRED_SOURCES = [
     "templates/artifacts",
 ]
 
+AGENT_DIR = ".opencode/agent"
+AGENT_TIERS = ("low", "medium", "high")
+CONDUCTOR_YAML = SOURCE_ROOT / "templates/project/conductor.yaml"
+
+
+def is_agent_destination(destination: str) -> bool:
+    return destination.startswith(f"{AGENT_DIR}/")
+
+
+def parse_frontmatter(text: str) -> dict[str, str]:
+    fields: dict[str, str] = {}
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return fields
+    for line in lines[1:]:
+        stripped = line.strip()
+        if stripped == "---":
+            break
+        if not line.startswith((" ", "\t")) and ":" in stripped:
+            key, _, value = stripped.partition(":")
+            fields[key.strip()] = value.strip()
+    return fields
+
+
+def parse_model_tiers(yaml_text: str) -> dict[str, str]:
+    tiers: dict[str, str] = {}
+    in_tiers = False
+    for line in yaml_text.splitlines():
+        if line.startswith("model_tiers:"):
+            in_tiers = True
+            continue
+        if in_tiers:
+            if not line.startswith((" ", "\t")):
+                break
+            stripped = line.rstrip()
+            if ":" in stripped:
+                key, _, value = stripped.partition(":")
+                key = key.strip()
+                value = value.strip()
+                if key:
+                    tiers[key] = value
+    return tiers
+
+
+def load_default_tiers() -> dict[str, str]:
+    return parse_model_tiers(CONDUCTOR_YAML.read_text(encoding="utf-8"))
+
+
+def render_agent(source: Path, tiers: dict[str, str]) -> str:
+    text = source.read_text(encoding="utf-8")
+    in_frontmatter = False
+    rendered: list[str] = []
+    for line in text.splitlines():
+        if line.strip() == "---":
+            in_frontmatter = not in_frontmatter
+            rendered.append(line)
+            continue
+        if in_frontmatter and line.strip().startswith("model_tier:"):
+            tier = line.split(":", 1)[1].strip()
+            model = tiers.get(tier, "")
+            if not model:
+                raise ValueError(
+                    f"{source.name}: model_tier '{tier}' has no entry in the "
+                    "model_tiers map in conductor.yaml"
+                )
+            rendered.append(f"model: {model}")
+            continue
+        rendered.append(line)
+    return "\n".join(rendered) + ("\n" if text.endswith("\n") else "")
+
 
 def build_manifest() -> list[tuple[Path, str]]:
     manifest: list[tuple[Path, str]] = []
@@ -90,11 +160,41 @@ def validate_sources(manifest: list[tuple[Path, str]]) -> list[str]:
     return problems
 
 
+def validate_tiers(manifest: list[tuple[Path, str]]) -> list[str]:
+    problems: list[str] = []
+    if not CONDUCTOR_YAML.exists():
+        problems.append(f"missing framework source: {CONDUCTOR_YAML.relative_to(SOURCE_ROOT)}")
+        return problems
+    tiers = parse_model_tiers(CONDUCTOR_YAML.read_text(encoding="utf-8"))
+    for tier in AGENT_TIERS:
+        if tier not in tiers:
+            problems.append(f"conductor.yaml: model_tiers map is missing tier '{tier}'")
+        elif not tiers[tier]:
+            problems.append(f"conductor.yaml: model_tiers['{tier}'] is empty")
+    for src, destination in manifest:
+        if not is_agent_destination(destination):
+            continue
+        frontmatter = parse_frontmatter(src.read_text(encoding="utf-8"))
+        tier = frontmatter.get("model_tier", "")
+        if tier not in AGENT_TIERS:
+            problems.append(
+                f"agent {src.name}: missing or invalid 'model_tier' "
+                f"(expected one of {', '.join(AGENT_TIERS)})"
+            )
+        elif tier not in tiers:
+            problems.append(
+                f"agent {src.name}: model_tier '{tier}' not defined in conductor.yaml"
+            )
+    return problems
+
+
 def apply_manifest(
     manifest: list[tuple[Path, str]], target: Path, force: bool
 ) -> tuple[list[str], list[str]]:
     created: list[str] = []
     skipped: list[str] = []
+
+    tiers = load_default_tiers()
 
     for src, destination_relative in manifest:
         destination = target / destination_relative
@@ -102,7 +202,10 @@ def apply_manifest(
             skipped.append(destination_relative)
             continue
         destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(src, destination)
+        if is_agent_destination(destination_relative):
+            destination.write_text(render_agent(src, tiers), encoding="utf-8")
+        else:
+            shutil.copyfile(src, destination)
         created.append(destination_relative)
 
     return created, skipped
@@ -127,6 +230,7 @@ def print_report(
 def print_next_steps(target: Path) -> None:
     print("\nNext steps:")
     print(f"  1. Edit {target / 'conductor.yaml'}: fill in project identity and github.repository/github.projects values.")
+    print("     Optionally set concrete models per tier under 'model_tiers' (defaults to opencode/big-pickle).")
     print(f"  2. Start opencode in {target} and confirm the orchestrator loads as default agent.")
     print("  3. Run /discover <idea> to produce your first Discovery artifact.")
     print("  4. Optional: set the ANTHROPIC_API_KEY secret to enable .github/workflows/opencode-review.yml.")
@@ -164,7 +268,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     manifest = build_manifest()
-    problems = validate_sources(manifest)
+    problems = validate_sources(manifest) + validate_tiers(manifest)
     if problems:
         for problem in problems:
             print(f"error: {problem}", file=sys.stderr)

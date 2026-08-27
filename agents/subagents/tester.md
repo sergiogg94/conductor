@@ -1,7 +1,7 @@
 ---
 description: Validates implemented work against acceptance criteria - maps ACs and ADR error cases to tests, writes and executes them, and produces a factual test report with coverage, gaps, and observed defects. Invoke after the developer finishes a task or feature branch.
 mode: subagent
-model: google/gemini-2.0-flash
+model_tier: medium
 temperature: 0.1
 steps: 30
 permission:

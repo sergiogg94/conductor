@@ -1,7 +1,7 @@
 ---
 description: Produces and maintains written project documentation - keeps README and docs aligned with implemented reality, and compiles the delivery checklist that consolidates requirements, review, and test status for human acceptance. Invoke after work is reviewed, or whenever documentation drifts.
 mode: subagent
-model: ollama/qwen2.5:7b-instruct
+model_tier: low
 temperature: 0.2
 steps: 20
 permission:

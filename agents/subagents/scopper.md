@@ -1,7 +1,7 @@
 ---
 description: Converts an approved Discovery artifact into scoped, testable requirements — minimum scope, functional and non-functional requirements, edge cases, and Given/When/Then acceptance criteria. Invoke after discovery is human-approved.
 mode: subagent
-model: ollama/qwen2.5:7b-instruct
+model_tier: low
 temperature: 0.2
 steps: 15
 permission:

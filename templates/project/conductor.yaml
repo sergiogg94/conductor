@@ -14,6 +14,14 @@ features:
   documentation_scaffold: true
   ci_templates: true
 
+# Concrete model used for each effort tier. Agents reference only a tier
+# (model_tier below); the framework resolves it here at install time.
+# Values follow the OpenCode format: provider/model-id.
+model_tiers:
+  low: opencode/big-pickle
+  medium: opencode/big-pickle
+  high: opencode/big-pickle
+
 agents:
   orchestrator:
     enabled: true
@@ -22,12 +30,12 @@ agents:
 
   discovery:
     enabled: true
-    model_tier: small
+    model_tier: low
     can_update_projects: false
 
   scopper:
     enabled: true
-    model_tier: small
+    model_tier: low
     can_update_projects: false
 
   planner:
@@ -42,7 +50,7 @@ agents:
 
   developer:
     enabled: true
-    model_tier: strong
+    model_tier: high
     can_update_projects: true
 
   reviewer:
@@ -62,7 +70,7 @@ agents:
 
   documenter:
     enabled: true
-    model_tier: small
+    model_tier: low
     can_update_projects: false
 
 artifacts:

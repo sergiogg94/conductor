@@ -8,8 +8,9 @@ name: opencode-review
 #
 # Setup:
 # 1. Store your provider API key as the ANTHROPIC_API_KEY repo secret
-#    (or adapt the `env` block if you use another provider).
-# 2. Adjust `model` to match your model_tier mapping in conductor.yaml.
+#    (or adapt the `env` block and `model` if you use another provider).
+# 2. Set `model` (below) to any model your provider offers. This is a standalone
+#    workflow input and is independent of the agent model_tiers in conductor.yaml.
 #
 # Note: pull_request events from forked repositories do not get access to secrets.
 

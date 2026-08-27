@@ -385,6 +385,8 @@ A typical strategy may include:
 
 The framework should define which roles or commands are suitable for which model tier, but should not hardcode a single provider strategy.
 
+In the current implementation, each agent references an effort tier (`low` / `medium` / `high`) and the concrete model per tier is chosen by the project in `conductor.yaml` (`model_tiers`), resolved at install. The framework stays provider-agnostic: projects pick their own models per tier.
+
 ## Reusability Model
 
 `conductor` is intended to be reusable across many repositories.
